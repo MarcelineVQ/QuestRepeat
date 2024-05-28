@@ -1,7 +1,7 @@
 -- Name: QuestRepeat
 -- License: LGPL v2.1
 
-local DEBUG_MODE = true
+local DEBUG_MODE = false
 
 local success = true
 local failure = nil
@@ -67,21 +67,6 @@ end
 local QuestRepeat = CreateFrame("Frame")
 
 local reward_chosen = { name = nil, item = 0 }
-
--- fucking lazypig took both alt and shift for quest automation
-local orig_AcceptQuest = AcceptQuest
-function QH_AcceptQuest()
-  qr_print("HEEEELP")
-  -- local lp = getglobal("LazyPig")
-  -- if lp then
-  --   print("fukyou")
-  --   if not IsControlKeyDown then
-  --     print("gud")
-  --     orig_AcceptQuest()
-  --   end
-  -- end
-end
-AcceptQuest = QH_AcceptQuest
 
 local orig_QuestRewardCompleteButton_OnClick = QuestRewardCompleteButton_OnClick
 function QH_QuestRewardCompleteButton_OnClick()
