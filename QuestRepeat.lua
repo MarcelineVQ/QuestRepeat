@@ -108,12 +108,22 @@ QuestFrameDetailPanel_OnShow = QH_QuestFrameDetailPanel_OnShow
 local orig_QuestFrameGreetingPanel_OnShow = QuestFrameGreetingPanel_OnShow
 function QH_QuestFrameGreetingPanel_OnShow()
   orig_QuestFrameGreetingPanel_OnShow()
-  local quest = QuestTitleText:GetText()
-  -- if IsControlKeyDown() then
-  --   getglobal("QuestFrameCompleteButton"):Click()
-  --   table.insert(reward_chosen.steps, GREETING)
-  -- end
+  local quest = GreetingText:GetText()
   debug_print("greeting: " .. quest)
+
+  if IsControlKeyDown() then
+    local titleButton;
+    for i=1, MAX_NUM_QUESTS do
+      titleButton = getglobal("QuestTitleButton" .. i)
+      if titleButton:IsVisible() and titleButton:GetText() == reward_chosen.name then
+        local qname = titleButton:GetText()
+        debug_print(qname)
+        titleButton:Click()
+        break
+      end
+    end
+  end
+
 end
 QuestFrameGreetingPanel_OnShow = QH_QuestFrameGreetingPanel_OnShow
 
@@ -140,20 +150,19 @@ QuestFrameProgressPanel_OnShow = QH_QuestFrameProgressPanel_OnShow
 --  end
 --  QuestFrame_OnHide = QH_QuestFrame_OnHide
 
-local report_dummies = true
 local function OnEvent()
   if event == "GOSSIP_SHOW" and IsControlKeyDown() and reward_chosen.name then
-      local titleButton;
-      for i=1, NUMGOSSIPBUTTONS do
-        titleButton = getglobal("GossipTitleButton" .. i)
-        if titleButton:IsVisible() and titleButton:GetText() == reward_chosen.name then
-          local qname = titleButton:GetText()
-          local btype = titleButton.type
-          debug_print(qname .. btype)
-          titleButton:Click()
-          break
-        end
+    local titleButton;
+    for i=1, NUMGOSSIPBUTTONS do
+      titleButton = getglobal("GossipTitleButton" .. i)
+      if titleButton:IsVisible() and titleButton:GetText() == reward_chosen.name then
+        local qname = titleButton:GetText()
+        local btype = titleButton.type
+        debug_print(qname .. btype)
+        titleButton:Click()
+        break
       end
+    end
   elseif event == "GOSSIP_SHOW" and not IsControlKeyDown() then
     reward_chosen.name = nil
   elseif event == "ADDON_LOADED" and arg1 == "QuestRepeat" then

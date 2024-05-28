@@ -5,6 +5,5 @@
 ## X-Date: 2024-05-24
 ## X-Website:
 ## Version: 1.0
-# SavedVariablesPerCharacter: AutoLoSSettings
 
 QuestRepeat.lua
