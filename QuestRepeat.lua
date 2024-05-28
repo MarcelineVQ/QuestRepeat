@@ -1,12 +1,12 @@
 -- Name: QuestRepeat
 -- License: LGPL v2.1
 
-local DEBUG_MODE = false
+local DEBUG_MODE = true
 
 local success = true
 local failure = nil
 
-local function qh_print(msg)
+local function qr_print(msg)
   DEFAULT_CHAT_FRAME:AddMessage(msg)
 end
 
@@ -68,10 +68,25 @@ local QuestRepeat = CreateFrame("Frame")
 
 local reward_chosen = { name = nil, item = 0 }
 
+-- fucking lazypig took both alt and shift for quest automation
+local orig_AcceptQuest = AcceptQuest
+function QH_AcceptQuest()
+  qr_print("HEEEELP")
+  -- local lp = getglobal("LazyPig")
+  -- if lp then
+  --   print("fukyou")
+  --   if not IsControlKeyDown then
+  --     print("gud")
+  --     orig_AcceptQuest()
+  --   end
+  -- end
+end
+AcceptQuest = QH_AcceptQuest
+
 local orig_QuestRewardCompleteButton_OnClick = QuestRewardCompleteButton_OnClick
 function QH_QuestRewardCompleteButton_OnClick()
   debug_print(reward_chosen.name)
-  if IsAltKeyDown() and reward_chosen.name then
+  if IsControlKeyDown() and reward_chosen.name then
       QuestFrameRewardPanel.itemChoice = reward_chosen.item
   else
     reward_chosen.item = QuestFrameRewardPanel.itemChoice
@@ -87,7 +102,7 @@ function QH_QuestFrameRewardPanel_OnShow()
 
   local quest = QuestRewardTitleText:GetText()
   debug_print("reward: " .. quest)
-  if IsAltKeyDown() and reward_chosen.name then
+  if IsControlKeyDown() and reward_chosen.name then
     getglobal("QuestFrameCompleteQuestButton"):Click()
   end
 end
@@ -98,7 +113,7 @@ function QH_QuestFrameDetailPanel_OnShow()
   orig_QuestFrameDetailPanel_OnShow()
   local quest = QuestTitleText:GetText()
   debug_print("detail: " .. quest)
-  if IsAltKeyDown() then
+  if IsControlKeyDown() then
     getglobal("QuestFrameAcceptButton"):Click()
     -- table.insert(reward_chosen.steps, DETAIL)
   end
@@ -109,7 +124,7 @@ local orig_QuestFrameGreetingPanel_OnShow = QuestFrameGreetingPanel_OnShow
 function QH_QuestFrameGreetingPanel_OnShow()
   orig_QuestFrameGreetingPanel_OnShow()
   local quest = QuestTitleText:GetText()
-  -- if IsShiftKeyDown() then
+  -- if IsControlKeyDown() then
   --   getglobal("QuestFrameCompleteButton"):Click()
   --   table.insert(reward_chosen.steps, GREETING)
   -- end
@@ -122,7 +137,7 @@ function QH_QuestFrameProgressPanel_OnShow()
   orig_QuestFrameProgressPanel_OnShow()
   local quest = QuestProgressTitleText:GetText()
   debug_print("progress: " .. quest)
-  if IsAltKeyDown() then
+  if IsControlKeyDown() then
     getglobal("QuestFrameCompleteButton"):Click()
     -- table.insert(reward_chosen.steps, PROGRESS)
   end
@@ -142,7 +157,7 @@ QuestFrameProgressPanel_OnShow = QH_QuestFrameProgressPanel_OnShow
 
 local report_dummies = true
 local function OnEvent()
-  if event == "GOSSIP_SHOW" and IsAltKeyDown() and reward_chosen.name then
+  if event == "GOSSIP_SHOW" and IsControlKeyDown() and reward_chosen.name then
       local titleButton;
       for i=1, NUMGOSSIPBUTTONS do
         titleButton = getglobal("GossipTitleButton" .. i)
@@ -154,7 +169,7 @@ local function OnEvent()
           break
         end
       end
-  elseif event == "GOSSIP_SHOW" and not IsAltKeyDown() then
+  elseif event == "GOSSIP_SHOW" and not IsControlKeyDown() then
     reward_chosen.name = nil
   elseif event == "ADDON_LOADED" and arg1 == "QuestRepeat" then
     -- load settings
