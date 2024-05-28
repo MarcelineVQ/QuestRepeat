@@ -1,0 +1,10 @@
+## Interface: 11200
+## Title: QuestRepeat
+## Notes: repeatedly hand in quests and autopick the reward
+## X-Category: Interface Enhancements
+## X-Date: 2024-05-24
+## X-Website:
+## Version: 1.0
+# SavedVariablesPerCharacter: AutoLoSSettings
+
+QuestRepeat.lua
