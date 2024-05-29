@@ -82,52 +82,58 @@ local function PreHookFunction(original,hook)
   end
 end
 
+local function noop () end
+
 --[[ Reward Choice --]]
 
-local function QH_QuestRewardCompleteButton_OnClick()
+local function QR_QuestRewardCompleteButton_OnClick()
   debug_print(reward_chosen.quest)
-  if IsControlKeyDown() and reward_chosen.quest then
-      QuestFrameRewardPanel.itemChoice = reward_chosen.item
+  if IsControlKeyDown() and reward_chosen.quest and reward_chosen.item then
+    QuestFrameRewardPanel.itemChoice = reward_chosen.item
+    debug_print("chose " .. reward_chosen.item)
   else
     reward_chosen.item = QuestFrameRewardPanel.itemChoice
     reward_chosen.quest = QuestRewardTitleText:GetText()
+    debug_print("itemNo: "..reward_chosen.item)
+    debug_print("questname: "..reward_chosen.quest)
   end
+  debug_print("handed in")
 end
-QuestRewardCompleteButton_OnClick = PreHookFunction(QuestRewardCompleteButton_OnClick,QH_QuestRewardCompleteButton_OnClick)
+QuestRewardCompleteButton_OnClick = PreHookFunction(DEBUG_MODE and noop or QuestRewardCompleteButton_OnClick,QR_QuestRewardCompleteButton_OnClick)
 
 --[[ Passthrogh Panels --]]
 
-local function QH_QuestFrameRewardPanel_OnShow()
+local function QR_QuestFrameRewardPanel_OnShow()
   local quest = QuestRewardTitleText:GetText()
   debug_print("reward: " .. quest)
-  if IsControlKeyDown() and reward_chosen.quest then
+  if IsControlKeyDown() and reward_chosen.quest and reward_chosen.item then
     QuestFrameCompleteQuestButton:Click()
   end
 end
-QuestFrameRewardPanel_OnShow = PostHookFunction(QuestFrameRewardPanel_OnShow,QH_QuestFrameRewardPanel_OnShow)
+QuestFrameRewardPanel_OnShow = PostHookFunction(QuestFrameRewardPanel_OnShow,QR_QuestFrameRewardPanel_OnShow)
 
-
-local function QH_QuestFrameDetailPanel_OnShow()
+local function QR_QuestFrameDetailPanel_OnShow()
   local quest = QuestTitleText:GetText()
   debug_print("detail: " .. quest)
   if IsControlKeyDown() then
-    QuestFrameAcceptButton:Click()
+    reward_chosen.quest = quest
+    AcceptQuest()
   end
 end
-QuestFrameDetailPanel_OnShow = PostHookFunction(QuestFrameDetailPanel_OnShow,QH_QuestFrameDetailPanel_OnShow)
+QuestFrameDetailPanel_OnShow = PostHookFunction(QuestFrameDetailPanel_OnShow,QR_QuestFrameDetailPanel_OnShow)
 
-local function QH_QuestFrameProgressPanel_OnShow()
+local function QR_QuestFrameProgressPanel_OnShow()
   local quest = QuestProgressTitleText:GetText()
   debug_print("progress: " .. quest)
   if IsControlKeyDown() then
     QuestFrameCompleteButton:Click()
   end
  end
-QuestFrameProgressPanel_OnShow = PostHookFunction(QuestFrameProgressPanel_OnShow,QH_QuestFrameProgressPanel_OnShow)
+QuestFrameProgressPanel_OnShow = PostHookFunction(QuestFrameProgressPanel_OnShow,QR_QuestFrameProgressPanel_OnShow)
 
 --[[ Quest Choice Panels --]]
 
-local function QH_QuestFrameGreetingPanel_OnShow()
+local function QR_QuestFrameGreetingPanel_OnShow()
   local npc = QuestFrameNpcNameText:GetText()
   debug_print("greeting: " .. npc)
 
@@ -144,11 +150,12 @@ local function QH_QuestFrameGreetingPanel_OnShow()
     end
   else
     reward_chosen.quest = nil
+    reward_chosen.item = nil
   end
 end
-QuestFrameGreetingPanel_OnShow = PostHookFunction(QuestFrameGreetingPanel_OnShow,QH_QuestFrameGreetingPanel_OnShow)
+QuestFrameGreetingPanel_OnShow = PostHookFunction(QuestFrameGreetingPanel_OnShow,QR_QuestFrameGreetingPanel_OnShow)
 
-local function QH_GossipFrame_OnShow()
+local function QR_GossipFrame_OnShow()
   local npc = GossipFrameNpcNameText:GetText()
   debug_print("gossip: " .. npc)
 
@@ -166,12 +173,13 @@ local function QH_GossipFrame_OnShow()
     end
   else
     reward_chosen.quest = nil
+    reward_chosen.item = nil
   end
 end
 
 local function OnEvent()
   if event == "GOSSIP_SHOW" then
-    QH_GossipFrame_OnShow()
+    QR_GossipFrame_OnShow()
   end
 end
 
