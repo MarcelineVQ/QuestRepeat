@@ -66,56 +66,76 @@ end
 
 local QuestRepeat = CreateFrame("Frame")
 
-local reward_chosen = { name = nil, item = 0 }
+local reward_chosen = { quest = nil, item = 0 }
 
-local orig_QuestRewardCompleteButton_OnClick = QuestRewardCompleteButton_OnClick
-function QH_QuestRewardCompleteButton_OnClick()
-  debug_print(reward_chosen.name)
-  if IsControlKeyDown() and reward_chosen.name then
+local function PostHookFunction(original,hook)
+  return function(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10)
+    original(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10)
+    hook(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10)
+  end
+end
+
+local function PreHookFunction(original,hook)
+  return function(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10)
+    hook(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10)
+    original(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10)
+  end
+end
+
+--[[ Reward Choice --]]
+
+local function QH_QuestRewardCompleteButton_OnClick()
+  debug_print(reward_chosen.quest)
+  if IsControlKeyDown() and reward_chosen.quest then
       QuestFrameRewardPanel.itemChoice = reward_chosen.item
   else
     reward_chosen.item = QuestFrameRewardPanel.itemChoice
-    reward_chosen.name = QuestRewardTitleText:GetText()
+    reward_chosen.quest = QuestRewardTitleText:GetText()
   end
-  orig_QuestRewardCompleteButton_OnClick()
 end
-QuestRewardCompleteButton_OnClick = QH_QuestRewardCompleteButton_OnClick
+QuestRewardCompleteButton_OnClick = PreHookFunction(QuestRewardCompleteButton_OnClick,QH_QuestRewardCompleteButton_OnClick)
 
-local orig_QuestFrameRewardPanel_OnShow = QuestFrameRewardPanel_OnShow
-function QH_QuestFrameRewardPanel_OnShow()
-  orig_QuestFrameRewardPanel_OnShow()
+--[[ Passthrogh Panels --]]
 
+local function QH_QuestFrameRewardPanel_OnShow()
   local quest = QuestRewardTitleText:GetText()
   debug_print("reward: " .. quest)
-  if IsControlKeyDown() and reward_chosen.name then
-    getglobal("QuestFrameCompleteQuestButton"):Click()
+  if IsControlKeyDown() and reward_chosen.quest then
+    QuestFrameCompleteQuestButton:Click()
   end
 end
-QuestFrameRewardPanel_OnShow = QH_QuestFrameRewardPanel_OnShow
+QuestFrameRewardPanel_OnShow = PostHookFunction(QuestFrameRewardPanel_OnShow,QH_QuestFrameRewardPanel_OnShow)
 
-local orig_QuestFrameDetailPanel_OnShow = QuestFrameDetailPanel_OnShow
-function QH_QuestFrameDetailPanel_OnShow()
-  orig_QuestFrameDetailPanel_OnShow()
+
+local function QH_QuestFrameDetailPanel_OnShow()
   local quest = QuestTitleText:GetText()
   debug_print("detail: " .. quest)
   if IsControlKeyDown() then
-    getglobal("QuestFrameAcceptButton"):Click()
-    -- table.insert(reward_chosen.steps, DETAIL)
+    QuestFrameAcceptButton:Click()
   end
 end
-QuestFrameDetailPanel_OnShow = QH_QuestFrameDetailPanel_OnShow
+QuestFrameDetailPanel_OnShow = PostHookFunction(QuestFrameDetailPanel_OnShow,QH_QuestFrameDetailPanel_OnShow)
 
-local orig_QuestFrameGreetingPanel_OnShow = QuestFrameGreetingPanel_OnShow
-function QH_QuestFrameGreetingPanel_OnShow()
-  orig_QuestFrameGreetingPanel_OnShow()
-  local quest = GreetingText:GetText()
-  debug_print("greeting: " .. quest)
-
+local function QH_QuestFrameProgressPanel_OnShow()
+  local quest = QuestProgressTitleText:GetText()
+  debug_print("progress: " .. quest)
   if IsControlKeyDown() then
+    QuestFrameCompleteButton:Click()
+  end
+ end
+QuestFrameProgressPanel_OnShow = PostHookFunction(QuestFrameProgressPanel_OnShow,QH_QuestFrameProgressPanel_OnShow)
+
+--[[ Quest Choice Panels --]]
+
+local function QH_QuestFrameGreetingPanel_OnShow()
+  local npc = QuestFrameNpcNameText:GetText()
+  debug_print("greeting: " .. npc)
+
+  if IsControlKeyDown() and reward_chosen.quest then
     local titleButton;
     for i=1, MAX_NUM_QUESTS do
       titleButton = getglobal("QuestTitleButton" .. i)
-      if titleButton:IsVisible() and titleButton:GetText() == reward_chosen.name then
+      if titleButton:IsVisible() and titleButton:GetText() == reward_chosen.quest then
         local qname = titleButton:GetText()
         debug_print(qname)
         titleButton:Click()
@@ -123,41 +143,20 @@ function QH_QuestFrameGreetingPanel_OnShow()
       end
     end
   else
-    reward_chosen.name = nil
+    reward_chosen.quest = nil
   end
-
 end
-QuestFrameGreetingPanel_OnShow = QH_QuestFrameGreetingPanel_OnShow
+QuestFrameGreetingPanel_OnShow = PostHookFunction(QuestFrameGreetingPanel_OnShow,QH_QuestFrameGreetingPanel_OnShow)
 
-local orig_QuestFrameProgressPanel_OnShow = QuestFrameProgressPanel_OnShow
-function QH_QuestFrameProgressPanel_OnShow()
-  orig_QuestFrameProgressPanel_OnShow()
-  local quest = QuestProgressTitleText:GetText()
-  debug_print("progress: " .. quest)
-  if IsControlKeyDown() then
-    getglobal("QuestFrameCompleteButton"):Click()
-    -- table.insert(reward_chosen.steps, PROGRESS)
-  end
- end
-QuestFrameProgressPanel_OnShow = QH_QuestFrameProgressPanel_OnShow
+local function QH_GossipFrame_OnShow()
+  local npc = GossipFrameNpcNameText:GetText()
+  debug_print("gossip: " .. npc)
 
--- local orig_QuestFrame_OnHide = QuestFrame_OnHide
--- function QH_QuestFrame_OnHide()
---   -- debug_print("foo")
---   -- for i,step in ipairs(reward_chosen.steps) do
---   --   debug_print(reward_chosen.steps[i])
---   -- end
---   -- debug_print(reward_chosen.item_index)
---   orig_QuestFrame_OnHide()
---  end
---  QuestFrame_OnHide = QH_QuestFrame_OnHide
-
-local function OnEvent()
-  if event == "GOSSIP_SHOW" and IsControlKeyDown() and reward_chosen.name then
+  if IsControlKeyDown() and reward_chosen.quest then
     local titleButton;
     for i=1, NUMGOSSIPBUTTONS do
       titleButton = getglobal("GossipTitleButton" .. i)
-      if titleButton:IsVisible() and titleButton:GetText() == reward_chosen.name then
+      if titleButton:IsVisible() and titleButton:GetText() == reward_chosen.quest then
         local qname = titleButton:GetText()
         local btype = titleButton.type
         debug_print(qname .. btype)
@@ -165,20 +164,16 @@ local function OnEvent()
         break
       end
     end
-  elseif event == "GOSSIP_SHOW" and not IsControlKeyDown() then
-    reward_chosen.name = nil
-  elseif event == "ADDON_LOADED" and arg1 == "QuestRepeat" then
-    -- load settings
+  else
+    reward_chosen.quest = nil
+  end
+end
+
+local function OnEvent()
+  if event == "GOSSIP_SHOW" then
+    QH_GossipFrame_OnShow()
   end
 end
 
 QuestRepeat:RegisterEvent("GOSSIP_SHOW")
--- QuestRepeat:RegisterEvent("GOSSIP_CLOSED")
--- QuestRepeat:RegisterEvent("QUEST_PROGRESS")
--- QuestRepeat:RegisterEvent("QUEST_PROGRESS")
--- QuestRepeat:RegisterEvent("QUEST_FINISHED")
--- QuestRepeat:RegisterEvent("QUEST_COMPLETE")
--- QuestRepeat:RegisterEvent("CHAT_MSG_SYSTEM")
--- QuestRepeat:RegisterEvent("PLAYER_ENTERING_WORLD")
-QuestRepeat:RegisterEvent("ADDON_LOADED")
 QuestRepeat:SetScript("OnEvent", OnEvent)
