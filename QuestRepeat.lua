@@ -122,6 +122,8 @@ function QH_QuestFrameGreetingPanel_OnShow()
         break
       end
     end
+  else
+    reward_chosen.name = nil
   end
 
 end
