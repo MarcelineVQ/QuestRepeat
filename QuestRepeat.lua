@@ -66,7 +66,7 @@ end
 
 local QuestRepeat = CreateFrame("Frame")
 
-local reward_chosen = { quest = nil, item = 0 }
+local reward_chosen = { quest = nil, item = nil }
 
 local function PostHookFunction(original,hook)
   return function(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10)
@@ -106,7 +106,7 @@ QuestRewardCompleteButton_OnClick = PreHookFunction(DEBUG_MODE and noop or Quest
 local function QR_QuestFrameRewardPanel_OnShow()
   local quest = QuestRewardTitleText:GetText()
   debug_print("reward: " .. quest)
-  if IsControlKeyDown() and reward_chosen.quest and reward_chosen.item then
+  if IsControlKeyDown() and ((reward_chosen.quest and reward_chosen.item) or QuestFrameRewardPanel.itemChoice == 0) then
     QuestFrameCompleteQuestButton:Click()
   end
 end
